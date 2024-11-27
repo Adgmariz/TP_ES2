@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}CharSheetMaker - Models{% endblock %}
+
+{% block content %}
+<h1>{{ character_sheet.name }}'s Sheet</h1>
+<p><strong>Creation date:</strong> {{ character_sheet.creation_date }}</p>
+<p><strong>Base Template:</strong> <a href="{% url 'charsheet_maker_app:sheet_template_detail' sheet_template.id %}">{{ sheet_template.template_name }}</a></p>
+<p><strong>Experience:</strong> {{ character_sheet.experience }}</p>
+<p><strong>Level:</strong> {{ character_sheet.level }}</p>
+<p><strong>Gold:</strong> {{ character_sheet.gold }}</p>
+<pre>{{ character_sheet.template_instance | pprint }}</pre>
+<button>Delete Sheet</button>
+{% endblock %}
