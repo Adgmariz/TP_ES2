@@ -9,11 +9,16 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: [3.12]
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
     - uses: actions/checkout@v4
