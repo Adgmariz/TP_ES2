@@ -11,11 +11,12 @@ urlpatterns = [
      path("character_sheet/<int:object_id>/", 
           views.CharacterSheetDetailVIew, name="character_sheet_detail"),
 
-     # sheet_template/<int:object_id>/create
-     # sheet_template/<int:object_id>/update
-     # sheet_template/<int:object_id>/delete
+     path("sheet_template/create/", 
+          views.SheetTemplateCreateView, name="sheet_template_create"),
 
-     # sheet_template/<int:object_id>/add_sheet
-     # sheet/<int:object_id>/update
-     # sheet/<int:object_id>/delete
+     path("sheet_template/<int:template_id>/create_character_sheet/", 
+          views.CharacterSheetCreateView, name="character_sheet_create"),
 ]
+
+# Sheet templates and character sheets should be deletable, 
+# but only character sheets editable, for simplicity;

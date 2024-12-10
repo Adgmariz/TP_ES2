@@ -4,27 +4,34 @@
 
 {% block content %}
 <h1>Sheet template {{ sheet_template.template_name }}</h1>
-<a href="{% url 'charsheet_maker_app:index' %}">Go back to templates</a>
-<dir><button>Edit template</button><br><button>Delete template</button></dir>
+<a href="{% url 'charsheet_maker_app:index' %}">Go back to my templates</a>
+<br><br><button>Delete template</button>
 <p><strong>Owner:</strong> {{ owner.username }}</p>
 <p><strong>Creation Date:</strong> {{ sheet_template.creation_date }}</p>
+<h2>Default Fields</h2>
+<ul>
+    <li><strong>Name</strong></li>
+    <li><strong>Experience</strong></li>
+    <li><strong>Level</strong></li>
+    <li><strong>Gold</strong></li>
+</ul>
 <h2>Character Customization</h2>
 <ul>
-    <li><strong>Available Classes:</strong> {{ sheet_template.charAvailableClasses }}</li>
-    <li><strong>Available Races:</strong> {{ sheet_template.charAvailableRaces }}</li>
-    <li><strong>All Attributes:</strong> {{ sheet_template.charAttributes }}</li>
-    <li><strong>All Statuses:</strong> {{ sheet_template.charStatuses }}</li>
-    <li><strong>Background:</strong> {{ sheet_template.charBackground }}</li>
+    <li><strong>Available Classes:</strong> {{ sheet_template.available_classes }}</li>
+    <li><strong>Available Races:</strong> {{ sheet_template.available_races }}</li>
+    <li><strong>All Attributes:</strong> {{ sheet_template.attributes }}</li>
+    <li><strong>All Statuses:</strong> {{ sheet_template.stats }}</li>
+    <li><strong>Background:</strong> {{ sheet_template.background }}</li>
 </ul>
 <h2>Inventory Definitions</h2>
 <ul>
-    <li><strong>Weapon Template:</strong> {{ sheet_template.charWeaponTemplate }}</li>
-    <li><strong>Equipment Template:</strong> {{ sheet_template.charEquipmentTemplate }}</li>
-    <li><strong>Consumable Template:</strong> {{ sheet_template.charConsumableTemplate }}</li>
-    <li><strong>Quest Item Template:</strong> {{ sheet_template.charQuestItemTemplate }}</li>
+    <li><strong>Weapon Template:</strong> {{ sheet_template.weapon_template }}</li>
+    <li><strong>Equipment Template:</strong> {{ sheet_template.equipment_template }}</li>
+    <li><strong>Consumable Template:</strong> {{ sheet_template.consumable_template }}</li>
+    <li><strong>Quest Item Template:</strong> {{ sheet_template.quest_item_template }}</li>
 </ul>
 <h2>Characters that use this template</h2>
-<button>New Character</button>
+<p><a href="{% url 'charsheet_maker_app:character_sheet_create' sheet_template.id %}">Add new character</a></p>
 {% if character_sheets_list %}
     <ol>
         {% for sheet in character_sheets_list %}

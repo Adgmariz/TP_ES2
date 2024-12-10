@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}CharSheetMaker - Create Sheet Template {% endblock %}
+
+{% block content %}
+<h1>New Sheet Template</h1>
+<a href="{% url 'charsheet_maker_app:index' %}">Go back to templates</a>
+<h3>Clear inputs for hints</h3>
+{% if fields_error_messages %}
+<h3>Some inputs must be corrected:</h3>
+{% for field, messages in fields_error_messages.items %}
+    <strong>{{ field }} errors </strong>
+    {% for m in messages %}
+    <ul>
+        <li>{{ m }}</li>
+    </ul>
+    {% endfor %}
+{% endfor %}
+{% endif %}
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Save Template</button>
+</form>
+{% endblock %}

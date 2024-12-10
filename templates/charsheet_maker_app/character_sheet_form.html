@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}CharSheetMaker - Create Character Sheet {% endblock %}
+
+{% block content %}
+<h1>New Character Sheet</h1>
+<a href="{% url 'charsheet_maker_app:sheet_template_detail' sheet_template.id %}
+">Go back to base template {{ sheet_template.template_name }} </a>
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="btn btn-primary">Save Sheet</button>
+</form>
+{% endblock %}
