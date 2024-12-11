@@ -80,10 +80,10 @@ def check_is_nonempty_strings_array(python_from_json) -> bool:
 
     for i, value in enumerate(python_from_json):
         if not isinstance(value, str):
-            error_messages.append(f"Array's {i + 1}-th item ({value}) is not a string")
+            error_messages.append(f"{i + 1}-th item ({value}) is not a string")
             continue
         if len(value) == 0:
-            error_messages.append(f"Array's {i + 1}-th item is empty")
+            error_messages.append(f"{i + 1}-th item is empty")
 
     return error_messages
 
@@ -97,20 +97,27 @@ def check_is_valid_stats_template(python_from_json) -> bool:
         error_messages.append("Input is not a json object")
         return error_messages
     
-    for k, v in python_from_json.items():
+    for i, (k, v) in enumerate(python_from_json.items()):
+
+        if k is None:
+            error_messages.append(f"Key {k} is not a string")
+            continue
 
         if not isinstance(k, str):
             error_messages.append(f"Key {k} is not a string")
+        elif k == "":
+            error_messages.append(f"{i + 1}-th key is empty")
+            continue
 
         if isinstance(v, str):
             if v != "":
                 error_messages.append(f"String value of {k} should be empty")
-        elif isinstance(v, int):
-            if v != 0:
-                error_messages.append(f"Number value of {k} should be 0")
         elif isinstance(v, bool):
             if v != False:
                 error_messages.append(f"Boolean value of {k} should be false")
+        elif isinstance(v, int):
+            if v != 0:
+                error_messages.append(f"Number value of {k} should be 0")
         else:
             error_messages.append(f"Value of {k} should be string, number or boolean")
 
@@ -126,23 +133,30 @@ def check_is_valid_item_template(python_from_json) -> bool:
         error_messages.append("Input is not a json object")
         return error_messages
     
-    for k, v in python_from_json.items():
+    for i, (k, v) in enumerate(python_from_json.items()):
+
+        if k is None:
+            error_messages.append(f"Key {k} is not a string")
+            continue
 
         if not isinstance(k, str):
             error_messages.append(f"Key {k} is not a string")
+        elif k == "":
+            error_messages.append(f"{i + 1}-th key is empty")
+            continue
 
         if isinstance(v, str):
             if v != "":
                 error_messages.append(f"String value of {k} should be empty")
-        elif isinstance(v, int):
-            if v != 0:
-                error_messages.append(f"Number value of {k} should be 0")
         elif isinstance(v, bool):
             if v != False:
                 error_messages.append(f"Boolean value of {k} should be false")
+        elif isinstance(v, int):
+            if v != 0:
+                error_messages.append(f"Number value of {k} should be 0")
         elif isinstance(v, list): 
             if v != []:
-                error_messages.append(f"Array value of {k} should be empty")
+                error_messages.append(f"Array value of {k} should have no elements")
         else:
             error_messages.append(f"Value of {k} should be string, number, boolean or array")
 
