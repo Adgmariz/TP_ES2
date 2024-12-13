@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmar Exclusão</title>
+</head>
+<body>
+    <h1>Excluir Template: {{ sheet_template.template_name }}</h1>
+    <p>Tem certeza de que deseja excluir este template? Esta ação não pode ser desfeita.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Excluir</button>
+        <a href="{% url 'charsheet_maker_app:sheet_template_detail' sheet_template.id %}">Cancelar</a>
+    </form>
+</body>
+</html>

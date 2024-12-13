@@ -160,16 +160,126 @@ class SheetTemplateForm(forms.ModelForm):
         }
 
 # Danger: model basic 4 fields hardcoded here;
-def generate_character_sheet_form_inputs(template_object):
-    return None
+def generate_character_sheet_form_inputs(template_object): #AQUI
+    """
+    Gera um formulário dinamicamente com base no SheetTemplate.
+    Cada atributo do template é convertido em um campo de formulário apropriado.
+    :param template_object: Instância de SheetTemplate.
+    :return: Instância de formulário com campos dinâmicos.
+    """
+    class DynamicCharacterSheetForm(forms.Form):
+        # Campos básicos do personagem
+        name = forms.CharField(max_length=200, initial="", label="Name")
+        experience = forms.IntegerField(initial=0, label="Experience")
+        level = forms.IntegerField(initial=0, label="Level")
+        gold = forms.IntegerField(initial=0, label="Gold")
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            # Gerar campo para "Class"
+            self.fields["class"] = forms.ChoiceField(
+                choices=[(cls, cls) for cls in template_object.available_classes],
+                label="Class",
+                required=True,
+            )
+
+            # Gerar campo para "Race"
+            self.fields["race"] = forms.ChoiceField(
+                choices=[(race, race) for race in template_object.available_races],
+                label="Race",
+                required=True,
+            )
+            
+            # Gerar campos dinâmicos para atributos
+            for attribute in template_object.attributes:
+                self.fields[attribute] = forms.IntegerField(
+                    initial=0, 
+                    label=f"Attribute: {attribute.capitalize()}"
+                )
+            
+            # Gerar campos dinâmicos para stats
+            for stat, default_value in template_object.stats.items():
+                if isinstance(default_value, int):
+                    self.fields[stat] = forms.IntegerField(
+                        initial=default_value, 
+                        label=f"Stat: {stat.capitalize()}"
+                    )
+                elif isinstance(default_value, str):
+                    self.fields[stat] = forms.CharField(
+                        initial=default_value, 
+                        label=f"Stat: {stat.capitalize()}"
+                    )
+                elif isinstance(default_value, bool):
+                    self.fields[stat] = forms.BooleanField(
+                        initial=default_value, 
+                        label=f"Stat: {stat.capitalize()}", 
+                        required=False
+                    )
+
+            # Gerar campo para "Background"
+            self.fields["background"] = forms.ChoiceField(
+                choices=[(bg, bg) for bg in template_object.background],
+                label="Background",
+                required=True,
+            )
+
+            # Gerar campos dinâmicos para inventário
+            inventory_templates = {
+                "weapon_template": "Weapon",
+                "equipment_template": "Equipment",
+                "consumable_template": "Consumable",
+                "quest_item_template": "Quest Item",
+            }
+            for template_field, label in inventory_templates.items():
+                template_data = getattr(template_object, template_field, {})
+                for key, value in template_data.items():
+                    field_name = f"{template_field}_{key}"
+                    if isinstance(value, int):
+                        self.fields[field_name] = forms.IntegerField(
+                            initial=value, 
+                            label=f"{label}: {key.capitalize()}"
+                        )
+                    elif isinstance(value, str):
+                        self.fields[field_name] = forms.CharField(
+                            initial=value, 
+                            label=f"{label}: {key.capitalize()}"
+                        )
+                    elif isinstance(value, bool):
+                        self.fields[field_name] = forms.BooleanField(
+                            initial=value, 
+                            label=f"{label}: {key.capitalize()}", 
+                            required=False
+                        )
+                    elif isinstance(value, list):
+                        self.fields[field_name] = forms.CharField(
+                            initial=", ".join(value), 
+                            label=f"{label}: {key.capitalize()} (list)",
+                            required=False
+                        )
+    
+    return DynamicCharacterSheetForm
 
 # Returns a dict of error messages str (input) -> list[str];
 def validate_character_sheet_form_input_content(template_object, form_cleaned_data):
     return {}
 
+#form incompleto
 class CharacterSheetFormExceptSheetTemplate(forms.Form):
 
     name = forms.CharField(max_length=200, initial="")
     experience = forms.IntegerField(initial=0)
     level = forms.IntegerField(initial=0)
     gold = forms.IntegerField(initial=0)
+
+class CharacterForm(forms.Form):
+    name = forms.CharField(label="Nome do Personagem", max_length=200)
+
+    def __init__(self, template, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Adicionar atributos do template como campos no formulário
+        for attr in template.attributes:
+            self.fields[attr] = forms.IntegerField(label=attr.capitalize(), required=True)
+        # Adicionar stats padrão
+        for stat, default in template.stats.items():
+            self.fields[stat] = forms.CharField(label=stat.capitalize(), initial=default, required=False)

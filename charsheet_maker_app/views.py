@@ -3,11 +3,13 @@ from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
 from .forms import SheetTemplateForm, CharacterSheetFormExceptSheetTemplate
 from .forms import validate_sheet_template_form_input_content
 from .forms import generate_character_sheet_form_inputs
+from .forms import CharacterForm
 
 from .models import SheetTemplate, CharacterSheet
 
@@ -85,14 +87,23 @@ def SheetTemplateCreateView(request):
 
 @login_required
 def CharacterSheetCreateView(request, template_id):
-    
+    sheet_template = get_object_or_404(SheetTemplate, id=template_id, sheet_template_owner=request.user)
     if request.method == 'GET':
-
+        form = CharacterForm(sheet_template, request.POST)
+        if form.is_valid():
+            # Cria o personagem
+            character_data = form.cleaned_data
+            character = sheet_template.create_character(
+                name=character_data.pop("name"),
+                **character_data
+            )
+            # Redireciona para a página do template ou lista de personagens
+            return HttpResponseRedirect(reverse('view_template', args=[template_id]))
         # sheet_template = get_object_or_404(SheetTemplate, id=template_id)
-        # form = generate_character_sheet_form_inputs(template_object=sheet_template)
-        # return render(request, "charsheet_maker_app/character_sheet_form.html", 
-        #               {"sheet_template": sheet_template, 
-        #                "form": form})
+        form = generate_character_sheet_form_inputs(template_object=sheet_template)
+        return render(request, "charsheet_maker_app/character_sheet_form.html", 
+                        {"sheet_template": sheet_template, 
+                        "form": form})
 
         return HttpResponse("form created dynamically from sheet template")
 
@@ -110,3 +121,20 @@ def CharacterSheetCreateView(request, template_id):
         # return render(request, "charsheet_maker_app/character_sheet_form.html", 
         #             {"sheet_template": sheet_template, 
         #             "form": form})
+
+@login_required
+def SheetTemplateDeleteView(request, object_id):
+    # Verifica se o usuário atual é o proprietário
+    sheet_template = get_object_or_404(SheetTemplate, id=object_id, sheet_template_owner=request.user)
+
+    if request.method == "POST":
+        sheet_template.delete()
+        # Redireciona para a lista de templates após a exclusão
+        return redirect(reverse("charsheet_maker_app:index"))
+
+    # Renderiza uma página de confirmação
+    return render(
+        request,
+        "charsheet_maker_app/sheet_template_confirm_delete.html",
+        {"sheet_template": sheet_template},
+    )
