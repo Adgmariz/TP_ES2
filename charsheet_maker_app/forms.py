@@ -232,11 +232,6 @@ def generate_character_sheet_form_inputs(template_object): #AQUI
                     )
 
             # Gerar campo para "Background"
-            self.fields["background"] = forms.ChoiceField(
-                choices=[(bg, bg) for bg in template_object.background],
-                label="Background",
-                required=True,
-            )
 
             for attribute in template_object.background:
                 self.fields[attribute] = forms.CharField(
