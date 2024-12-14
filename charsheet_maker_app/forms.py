@@ -232,46 +232,13 @@ def generate_character_sheet_form_inputs(template_object): #AQUI
                     )
 
             # Gerar campo para "Background"
-            self.fields["background"] = forms.ChoiceField(
-                choices=[(bg, bg) for bg in template_object.background],
-                label="Background",
-                required=True,
-            )
 
-            # Gerar campos dinâmicos para inventário
-            inventory_templates = {
-                "weapon_template": "Weapon",
-                "equipment_template": "Equipment",
-                "consumable_template": "Consumable",
-                "quest_item_template": "Quest Item",
-            }
-            for template_field, label in inventory_templates.items():
-                template_data = getattr(template_object, template_field, {})
-                for key, value in template_data.items():
-                    field_name = f"{template_field}_{key}"
-                    if isinstance(value, int):
-                        self.fields[field_name] = forms.IntegerField(
-                            initial=value, 
-                            label=f"{label}: {key.capitalize()}"
-                        )
-                    elif isinstance(value, str):
-                        self.fields[field_name] = forms.CharField(
-                            initial=value, 
-                            label=f"{label}: {key.capitalize()}"
-                        )
-                    elif isinstance(value, bool):
-                        self.fields[field_name] = forms.BooleanField(
-                            initial=value, 
-                            label=f"{label}: {key.capitalize()}", 
-                            required=False
-                        )
-                    elif isinstance(value, list):
-                        self.fields[field_name] = forms.CharField(
-                            initial=", ".join(value), 
-                            label=f"{label}: {key.capitalize()} (list)",
-                            required=False
-                        )
-    
+            for attribute in template_object.background:
+                self.fields[attribute] = forms.CharField(
+                    initial='', 
+                    label=f"Background: {attribute.capitalize()}"
+                )
+            
     return DynamicCharacterSheetForm
 
 # Returns a dict of error messages str (input) -> list[str];
