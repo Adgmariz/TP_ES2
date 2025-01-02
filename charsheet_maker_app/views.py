@@ -121,20 +121,3 @@ def CharacterSheetCreateView(request, template_id):
         # return render(request, "charsheet_maker_app/character_sheet_form.html", 
         #             {"sheet_template": sheet_template, 
         #             "form": form})
-
-@login_required
-def SheetTemplateDeleteView(request, object_id):
-    # Verifica se o usuário atual é o proprietário
-    sheet_template = get_object_or_404(SheetTemplate, id=object_id, sheet_template_owner=request.user)
-
-    if request.method == "POST":
-        sheet_template.delete()
-        # Redireciona para a lista de templates após a exclusão
-        return redirect(reverse("charsheet_maker_app:index"))
-
-    # Renderiza uma página de confirmação
-    return render(
-        request,
-        "charsheet_maker_app/sheet_template_confirm_delete.html",
-        {"sheet_template": sheet_template},
-    )
