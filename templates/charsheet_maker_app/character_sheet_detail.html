@@ -1,14 +1,120 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
 
-{% block title %}CharSheetMaker - Models{% endblock %}
+<head>
+    <meta charset="utf-8">
+    <title>CharSheetMaker - Character Sheet</title>
+    <style>
+        .hidden {
+            display: none;
+        }
 
-{% block content %}
-<h1>{{ character_sheet.name }}'s Sheet</h1>
-<p><strong>Creation date:</strong> {{ character_sheet.creation_date }}</p>
-<p><strong>Base Template:</strong> <a href="{% url 'charsheet_maker_app:sheet_template_detail' sheet_template.id %}">{{ sheet_template.template_name }}</a></p>
-<p><strong>Experience:</strong> {{ character_sheet.experience }}</p>
-<p><strong>Level:</strong> {{ character_sheet.level }}</p>
-<p><strong>Gold:</strong> {{ character_sheet.gold }}</p>
-<pre>{{ character_sheet.template_instance | pprint }}</pre>
-<button>Delete Sheet</button>
-{% endblock %}
+        .item-form-group {
+            margin-bottom: 1em;
+        }
+
+        .item-form-select {
+            padding: 0.5em;
+        }
+
+        .item-form {
+            margin-top: 1em;
+        }
+
+        button {
+            margin-top: 0.5em;
+            padding: 0.5em 1em;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>{{ character_sheet.name }}'s Sheet</h1>
+    <a href="{% url 'charsheet_maker_app:sheet_template_detail' sheet_template.id %}">
+        Go back to base template {{ sheet_template.template_name }}
+    </a>
+
+    <h3>Character Info</h3>
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        {{ form_without_items.as_p }}
+        <button type="submit" class="btn btn-primary">Save info</button>
+    </form>
+
+    <h3>Character Inventory</h3>
+
+    <div class="add-item-form-group">
+        <label for="add-item-form-type">Add Item to Inventory:</label>
+        <select id="add-item-form-type" class="add-item-form-select" onchange="switch_add_item_form()">
+            <option value="">Select Item Type</option>
+            {% for item_type in add_item_forms.keys %}
+            <option value="{{ item_type }}">{{ item_type }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% for item_type, form in add_item_forms.items %}
+    <form method="post" class="mt-4" action="{% url 'charsheet_maker_app:character_sheet_add_item' character_sheet.id %}">
+        {% csrf_token %}            
+        <div class="add-item-form hidden" id="add-item-form-{{ item_type }}">
+            <input type="hidden" name="action" value="add">
+            {{ form.as_p }}
+            <button type="submit" name="submit-{{ item_type }}">Add {{ item_type }}</button>
+        </div>
+    </form>
+    {% endfor %}
+
+    {% for item_type, item_set in item_sets.items%}
+    <h4>{{ item_type }}</h4>
+    <div>
+        <ul>
+        {% for item_id, item in item_set.items %}
+        <li>
+
+            <div class="item-div">
+            {{ item }}
+            </div>
+
+            <form method="post" class="mt-4" action="{% url 'charsheet_maker_app:character_sheet_remove_item' character_sheet.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="item_type" value="{{ item_type }}">
+                <input type="hidden" name="item_id" value="{{ item_id }}">
+                <button type="submit">Remove Item</button>
+            </form>
+
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+    <br>
+    <a href="{% url 'charsheet_maker_app:character_sheet_remove' character_sheet.id %}">
+        Remove Sheet
+    </a>
+
+    <script>
+        function switch_add_item_form() {
+            const selected_form = document.getElementById("add-item-form-type").value;
+
+            document.querySelectorAll(".add-item-form").forEach(form => {
+                form.classList.add("hidden");
+            });
+
+            if (selected_form) {
+                document.getElementById(`add-item-form-${selected_form}`).classList.remove("hidden");
+            }
+        }
+    </script>
+</body>
+
+</html>

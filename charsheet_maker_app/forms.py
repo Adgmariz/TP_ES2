@@ -165,6 +165,7 @@ def check_is_valid_item_template(python_from_json) -> bool:
 class SheetTemplateForm(forms.ModelForm):
 
     class Meta:
+
         model = SheetTemplate
         exclude = ["sheet_template_owner", "creation_date"]
 
@@ -173,94 +174,154 @@ class SheetTemplateForm(forms.ModelForm):
             for field, placeholder in template_form_examples.items()
         }
 
-# Danger: model basic 4 fields hardcoded here;
-def generate_character_sheet_form_inputs(template_object): #AQUI
-    """
-    Gera um formulário dinamicamente com base no SheetTemplate.
-    Cada atributo do template é convertido em um campo de formulário apropriado.
-    :param template_object: Instância de SheetTemplate.
-    :return: Instância de formulário com campos dinâmicos.
-    """
-    class DynamicCharacterSheetForm(forms.Form):
-        # Campos básicos do personagem
-        name = forms.CharField(max_length=200, initial="", label="Name")
-        experience = forms.IntegerField(initial=0, label="Experience")
-        level = forms.IntegerField(initial=0, label="Level")
-        gold = forms.IntegerField(initial=0, label="Gold")
+class CharacterSheetCreateForm(forms.Form):
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-
-            # Gerar campo para "Class"
-            self.fields["class"] = forms.ChoiceField(
-                choices=[(cls, cls) for cls in template_object.available_classes],
-                label="Class",
-                required=True,
-            )
-
-            # Gerar campo para "Race"
-            self.fields["race"] = forms.ChoiceField(
-                choices=[(race, race) for race in template_object.available_races],
-                label="Race",
-                required=True,
-            )
-            
-            # Gerar campos dinâmicos para atributos
-            for attribute in template_object.attributes:
-                self.fields[attribute] = forms.IntegerField(
-                    initial=0, 
-                    label=f"Attribute: {attribute.capitalize()}"
-                )
-            
-            # Gerar campos dinâmicos para stats
-            for stat, default_value in template_object.stats.items():
-                if isinstance(default_value, int):
-                    self.fields[stat] = forms.IntegerField(
-                        initial=default_value, 
-                        label=f"Stat: {stat.capitalize()}"
-                    )
-                elif isinstance(default_value, str):
-                    self.fields[stat] = forms.CharField(
-                        initial=default_value, 
-                        label=f"Stat: {stat.capitalize()}"
-                    )
-                elif isinstance(default_value, bool):
-                    self.fields[stat] = forms.BooleanField(
-                        initial=default_value, 
-                        label=f"Stat: {stat.capitalize()}", 
-                        required=False
-                    )
-
-            # Gerar campo para "Background"
-
-            for attribute in template_object.background:
-                self.fields[attribute] = forms.CharField(
-                    initial='', 
-                    label=f"Background: {attribute.capitalize()}"
-                )
-            
-    return DynamicCharacterSheetForm
-
-# Returns a dict of error messages str (input) -> list[str];
-def validate_character_sheet_form_input_content(template_object, form_cleaned_data):
-    return {}
-
-#form incompleto
-class CharacterSheetFormExceptSheetTemplate(forms.Form):
-
-    name = forms.CharField(max_length=200, initial="")
-    experience = forms.IntegerField(initial=0)
-    level = forms.IntegerField(initial=0)
-    gold = forms.IntegerField(initial=0)
-
-class CharacterForm(forms.Form):
-    name = forms.CharField(label="Nome do Personagem", max_length=200)
-
-    def __init__(self, template, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Adicionar atributos do template como campos no formulário
-        for attr in template.attributes:
-            self.fields[attr] = forms.IntegerField(label=attr.capitalize(), required=True)
-        # Adicionar stats padrão
-        for stat, default in template.stats.items():
-            self.fields[stat] = forms.CharField(label=stat.capitalize(), initial=default, required=False)
+
+        self.fields["name"] = forms.CharField(max_length=200, initial="", label="name")
+
+class CharacterSheetEditFormExceptItems(forms.Form):
+
+    def __init__(self, sheet_template_object, character_sheet_object, 
+                 *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["name"] = forms.CharField(
+            max_length=200, 
+            initial="" if character_sheet_object is None else character_sheet_object.name, 
+            label="Name",
+            required=False
+        )
+        self.fields["experience"] = forms.IntegerField(
+            initial=0 if character_sheet_object is None else character_sheet_object.experience, 
+            label="Experience",
+            required=False
+        )
+        self.fields["level"] = forms.IntegerField(
+            initial=0 if character_sheet_object is None else character_sheet_object.level, 
+            label="Level",
+            required=False
+        )
+        self.fields["gold"] = forms.IntegerField(
+            initial=0 if character_sheet_object is None else character_sheet_object.gold, 
+            label="Gold",
+            required=False
+        )
+
+        self.fields["class"] = forms.ChoiceField(
+            choices=[(cls, cls) for cls in sheet_template_object.available_classes],
+            initial=sheet_template_object.available_classes[0] if character_sheet_object is None else character_sheet_object.char_class,
+            label="Class",
+        )
+
+        self.fields["race"] = forms.ChoiceField(
+            choices=[(race, race) for race in sheet_template_object.available_races],
+            initial=sheet_template_object.available_races[0] if character_sheet_object is None else character_sheet_object.race,
+            label="Race",
+        )
+
+        for key in sheet_template_object.background:
+            self.fields[f"background-{key}"] = forms.CharField(
+                initial='' if character_sheet_object is None else character_sheet_object.background[key], 
+                label=f"Background: {key.capitalize()}",
+                required=False
+            )
+
+        for key in sheet_template_object.attributes:
+            self.fields[f"attribute-{key}"] = forms.IntegerField(
+                initial=0 if character_sheet_object is None else character_sheet_object.attributes[key], 
+                label=f"Attribute: {key.capitalize()}",
+                required=False
+            )
+        
+        for key, default_value in sheet_template_object.stats.items():
+            
+            if isinstance(default_value, bool):
+                self.fields[f"stat-{key}"] = forms.BooleanField(
+                    initial=default_value if character_sheet_object is None 
+                    else character_sheet_object.stats[key], 
+                    label=f"Stat: {key.capitalize()}", 
+                    required=False
+                )
+
+            elif isinstance(default_value, int):
+                self.fields[f"stat-{key}"] = forms.IntegerField(
+                    initial=default_value if character_sheet_object is None 
+                    else character_sheet_object.stats[key], 
+                    label=f"Stat: {key.capitalize()}",
+                    required=False
+                )
+            
+            elif isinstance(default_value, str):
+                self.fields[f"stat-{key}"] = forms.CharField(
+                    initial=default_value if character_sheet_object is None 
+                    else character_sheet_object.stats[key], 
+                    label=f"Stat: {key.capitalize()}",
+                    required=False
+                )
+
+def get_item_data_from_add_item_form(form):
+
+    item_data = {}
+    if form.is_valid():
+        for k, v in form.cleaned_data.items():
+            if k != "item_type":
+                item_data[k] = v
+
+        return item_data
+
+    return None
+
+class CharacterSheetAddItemForm(forms.Form):
+
+    def __init__(self, item_type, item_template, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["item_type"] = forms.CharField(initial=item_type ,widget=forms.HiddenInput())
+
+        for key, default_value in item_template.items():
+
+            if isinstance(default_value, bool):
+                self.fields[f"{key}"] = forms.BooleanField(
+                    initial=default_value, 
+                    label=f"{key.capitalize()}", 
+                    required=False
+                )
+
+            elif isinstance(default_value, int):
+                self.fields[f"{key}"] = forms.IntegerField(
+                    initial=default_value, 
+                    label=f"{key.capitalize()}",
+                    required=False
+                )
+
+            elif isinstance(default_value, str):
+                self.fields[f"{key}"] = forms.CharField(
+                    initial=default_value, 
+                    label=f"{key.capitalize()}",
+                    required=False
+                )
+
+            elif isinstance(default_value, list):
+                self.fields[f"{key}"] = forms.CharField(
+                    initial=default_value,
+                    label=f"{key.capitalize()}",
+                    
+                    required=False
+                )
+
+def get_item_id_from_remove_item_form(form):
+
+    if form.is_valid():
+        return form.cleaned_data["item_id"]
+
+    return None
+
+class CharacterSheetRemoveItemForm(forms.Form):
+
+    def __init__(self, item_type, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["item_type"] = forms.CharField(initial=item_type, widget=forms.HiddenInput())
+        self.fields["item_id"] = forms.CharField(widget=forms.HiddenInput())

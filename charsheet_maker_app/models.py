@@ -11,7 +11,7 @@ class SheetTemplate(models.Model):
     # FIELDS BELOW ARE USED TO CREATE A TEMPLATE FORM;
 
     # ========== CHARACTER CUSTOMIZATION OPTIONS ========== #
-
+    
     # String arrays;
     available_classes = models.JSONField(default=list)  # Ex.: ["warrior", "mage"]
     available_races = models.JSONField(default=list)    # Ex.: ["elf", "dwarf"]
@@ -43,11 +43,19 @@ class CharacterSheet(models.Model):
 
     creation_date = models.DateTimeField("date was created", auto_now_add=True)
 
-    # Basic components (should be default in template creation);
-    # Don't change (see generate_character_sheet_form_inputs in forms.py)
     name = models.CharField(max_length=200, default="")
     experience = models.IntegerField(default=0)
     level = models.IntegerField(default=0)
     gold = models.IntegerField(default=0)
+    
+    char_class = models.CharField(max_length=200, default="")
+    race = models.CharField(max_length=200, default="")
+    background = models.JSONField(default=dict)
+    attributes = models.JSONField(default=dict)
 
-    template_instance = models.JSONField(default=dict)
+    stats = models.JSONField(default=dict)
+
+    weapons = models.JSONField(default=dict)
+    equipments = models.JSONField(default=dict)
+    consumables = models.JSONField(default=dict)
+    quest_items = models.JSONField(default=dict)
