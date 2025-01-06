@@ -6,6 +6,8 @@ from .forms import check_is_valid_item_template
 
 from .forms import validate_sheet_template_form_input_content
 
+# Unit tests for testing the data validation for sheet template creation form data;
+# Ex.: The "attributes" field should be only a list of strings;
 class SheetTemplateValidationTests(TestCase):
 
     def test_check_is_nonempty_strings_array___not_array(self):
@@ -269,3 +271,9 @@ class SheetTemplateValidationTests(TestCase):
         }
         fields_error_messages = validate_sheet_template_form_input_content(form_cleaned_data)
         self.assertEqual(fields_error_messages, {})
+
+class SheetTemplateCreationTests(TestCase):
+    pass
+
+class CharacterSheetCreationAndEditionTests(TestCase):
+    pass

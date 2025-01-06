@@ -1,7 +1,7 @@
 from .models import SheetTemplate, CharacterSheet
 from django import forms
 
-template_form_examples = {
+template_form_placeholders = {
 
     "available_classes": 
     ('Define what classes options players will have. Ex: ["warrior", "mage"]'),
@@ -171,7 +171,7 @@ class SheetTemplateForm(forms.ModelForm):
 
         widgets = {
             field: forms.Textarea(attrs={"placeholder": placeholder, "rows": 4})
-            for field, placeholder in template_form_examples.items()
+            for field, placeholder in template_form_placeholders.items()
         }
 
 class CharacterSheetCreateForm(forms.Form):
