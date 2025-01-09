@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}CharSheetMaker - Sheet template {% endblock %}
+{% block title %}CharSheetMaker - Sheet template{% endblock %}
 
 {% block content %}
 <h1>Sheet template {{ sheet_template.template_name }}</h1>
@@ -8,29 +8,115 @@
 <br><br><button>Delete template</button>
 <p><strong>Owner:</strong> {{ owner.username }}</p>
 <p><strong>Creation Date:</strong> {{ sheet_template.creation_date }}</p>
-<h2>Default Fields</h2>
-<ul>
-    <li><strong>Name</strong></li>
-    <li><strong>Experience</strong></li>
-    <li><strong>Level</strong></li>
-    <li><strong>Gold</strong></li>
-</ul>
-<h2>Character Customization</h2>
-<ul>
-    <li><strong>Available Classes:</strong> {{ sheet_template.available_classes }}</li>
-    <li><strong>Available Races:</strong> {{ sheet_template.available_races }}</li>
-    <li><strong>Background:</strong> {{ sheet_template.background }}</li>
-    <li><strong>All Attributes:</strong> {{ sheet_template.attributes }}</li>
-    <li><strong>All Statuses:</strong> {{ sheet_template.stats }}</li>
 
-</ul>
-<h2>Inventory Definitions</h2>
+<h2>Default Fields</h2>
+
 <ul>
-    <li><strong>Weapon Template:</strong> {{ sheet_template.weapon_template }}</li>
-    <li><strong>Equipment Template:</strong> {{ sheet_template.equipment_template }}</li>
-    <li><strong>Consumable Template:</strong> {{ sheet_template.consumable_template }}</li>
-    <li><strong>Quest Item Template:</strong> {{ sheet_template.quest_item_template }}</li>
+    <li>Name</li>
+    <li>Experience</li>
+    <li>Level</li>
+    <li>Gold</li>
 </ul>
+
+<h2>Custom Fields</h2>
+
+<h4>Available Classes</h4>
+    <ul>
+    {% for class in sheet_template.available_classes %}
+        <li id="class-{{ forloop.counter0 }}">{{ class }}</li>
+    {% endfor %}
+    </ul>
+<h4>Available Races</h4>
+    <ul>
+    {% for race in sheet_template.available_races %}
+        <li id="race-{{ forloop.counter0 }}">{{ race }}</li>
+    {% endfor %}
+    </ul>
+<h4>Background</h4>
+    <ul>
+    {% for b in sheet_template.background %}
+        <li id="background-{{ forloop.counter0 }}">{{ b }}</li>
+    {% endfor %}
+    </ul>
+<h4>Attributes</h4>
+    <ul>   
+    {% for attr in sheet_template.attributes %}
+        <li id="attribute-{{ forloop.counter0 }}">{{ attr }}</li>
+    {% endfor %}
+    </ul>
+<h4>Stats</h4>
+    <ul>
+    {% load custom_filters %}
+    {% for stat, default_val in sheet_template.stats.items %}
+        {% if default_val == "" %}
+            <li id="stat-{{ forloop.counter0 }}">{{ stat }} - text</li>
+        {% elif default_val|is_type:"bool" %}
+            <li id="stat-{{ forloop.counter0 }}">{{ stat }} - true or false</li>
+        {% else %}
+            <li id="stat-{{ forloop.counter0 }}">{{ stat }} - number</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+
+<h2>Inventory Definition</h2>
+
+<h4>Weapon Template</h4>
+    <ul>
+    {% for attr, default_val in sheet_template.weapon_template.items %}
+        {% if default_val == "" %}
+            <li id="weapon-attr-{{ forloop.counter0 }}">{{ attr }} - text</li>
+        {% elif default_val|is_type:"bool" %}
+            <li id="weapon-attr-{{ forloop.counter0 }}">{{ attr }} - true or false</li>
+        {% elif default_val == 0 %}
+            <li id="weapon-attr-{{ forloop.counter0 }}">{{ attr }} - number</li>
+        {% else %}
+            <li id="weapon-attr-{{ forloop.counter0 }}">{{ attr }} - list</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+<h4>Equipment Template</h4>
+    <ul>
+    {% for attr, default_val in sheet_template.equipment_template.items %}
+        {% if default_val == "" %}
+            <li id="equipment-attr-{{ forloop.counter0 }}">{{ attr }} - text</li>
+        {% elif default_val|is_type:"bool" %}
+            <li id="equipment-attr-{{ forloop.counter0 }}">{{ attr }} - true or false</li>
+        {% elif default_val == 0 %}
+            <li id="equipment-attr-{{ forloop.counter0 }}">{{ attr }} - number</li>
+        {% else %}
+            <li id="equipment-attr-{{ forloop.counter0 }}">{{ attr }} - list</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+<h4>Consumable Template</h4>
+    <ul>
+    {% for attr, default_val in sheet_template.consumable_template.items %}
+        {% if default_val == "" %}
+            <li id="consumable-attr-{{ forloop.counter0 }}">{{ attr }} - text</li>
+        {% elif default_val|is_type:"bool" %}
+            <li id="consumable-attr-{{ forloop.counter0 }}">{{ attr }} - true or false</li>
+        {% elif default_val == 0 %}
+            <li id="consumable-attr-{{ forloop.counter0 }}">{{ attr }} - number</li>
+        {% else %}
+            <li id="consumable-attr-{{ forloop.counter0 }}">{{ attr }} - list</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+<h4>Quest Item Template</h4>
+    <ul>
+    {% for attr, default_val in sheet_template.quest_item_template.items %}
+        {% if default_val == "" %}
+            <li id="quest-item-attr-{{ forloop.counter0 }}">{{ attr }} - text</li>
+        {% elif default_val|is_type:"bool" %}
+            <li id="quest-item-attr-{{ forloop.counter0 }}">{{ attr }} - true or false</li>
+        {% elif default_val == 0 %}
+            <li id="quest-item-attr-{{ forloop.counter0 }}">{{ attr }} - number</li>
+        {% else %}
+            <li id="quest-item-attr-{{ forloop.counter0 }}">{{ attr }} - list</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+
 <h2>Characters that use this template</h2>
 <p><a href="{% url 'charsheet_maker_app:character_sheet_create' sheet_template.id %}">Add new character</a></p>
 {% if character_sheets_list %}

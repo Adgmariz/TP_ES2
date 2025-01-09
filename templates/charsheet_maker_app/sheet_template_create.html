@@ -5,6 +5,13 @@
 {% block content %}
 <h1>New Sheet Template</h1>
 <a href="{% url 'charsheet_maker_app:index' %}">Go back to templates</a>
+<h3>Default fields characters will have:</h3>
+<ul>
+    <li>Name</li>
+    <li>Experience</li>
+    <li>Level</li>
+    <li>Gold</li>
+</ul>
 <h3>Clear inputs for hints</h3>
 {% if fields_error_messages %}
 <h3>Some inputs must be corrected:</h3>

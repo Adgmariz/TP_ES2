@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponseForbidden
 from django.http import HttpResponseBadRequest
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -35,6 +36,9 @@ class IndexView(LoginRequiredMixin, generic.ListView):
 def SheetTemplateDetailVIew(request, template_id):
 
     sheet_template = get_object_or_404(SheetTemplate, id=template_id)
+    if sheet_template.sheet_template_owner != request.user:
+        return HttpResponseForbidden()
+
     character_sheets_list = CharacterSheet.objects.filter(template=sheet_template)
 
     return render(
@@ -52,6 +56,9 @@ def CharacterSheetDetailView(request, sheet_id):
 
     character_sheet = get_object_or_404(CharacterSheet, id=sheet_id)
     sheet_template = character_sheet.template
+
+    if sheet_template.sheet_template_owner != request.user:
+        return HttpResponseForbidden()
 
     if request.method == 'GET':
 
@@ -105,6 +112,7 @@ def CharacterSheetDetailView(request, sheet_id):
     return render(request, "charsheet_maker_app/character_sheet_detail.html", 
     context={"character_sheet": character_sheet,
              "sheet_template": sheet_template, 
+             "owner": sheet_template.sheet_template_owner,
              "form_without_items": form_without_items,
              "add_item_forms": add_item_forms,
              "item_sets": {
